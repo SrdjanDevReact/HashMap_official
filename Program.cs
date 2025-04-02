@@ -1,3 +1,4 @@
+// See https://aka.ms/new-console-template for more information
 using System;
 
 class Program
@@ -15,7 +16,14 @@ class Program
         foreach(var kvpair in hashMap){
             System.Console.WriteLine($"Key: {kvpair.Key} -- Value: {kvpair.Value}");
         }
+
+        foreach(var k in hashMap.GetKeyCollection()){
+            System.Console.WriteLine($"Key: {k}");
+        }
         
+        foreach(var v in hashMap.GetValueCollection()){
+            System.Console.WriteLine($"Value: {v}");
+        }
 
     }
 }
