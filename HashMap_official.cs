@@ -1,7 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
-public class HashMap<K, V>
+public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
 {
     class Node
     {
@@ -13,6 +14,52 @@ public class HashMap<K, V>
         {
             this.key = key;
             this.value = value;
+        }
+    }
+
+    class KeyValueEnumerator : IEnumerator<KeyValuePair<K, V>>
+    {
+
+        private Node[] nodes;
+        private int index;
+        private Node currentNode;
+
+        public KeyValueEnumerator(Node[] nodes)
+        {
+            this.nodes = nodes;
+            Reset();
+
+        }
+        public KeyValuePair<K, V> Current => new KeyValuePair<K, V>(currentNode.key,currentNode.value);
+
+        object IEnumerator.Current => Current;
+
+        public void Dispose()
+        {
+            System.Console.WriteLine("Zavrseno!");
+        }
+
+        public bool MoveNext()
+        {
+            if(currentNode != null && currentNode.nextNode != null) {
+                currentNode = currentNode.nextNode;
+                return true;
+            }
+            while(index < nodes.Length - 1 ){
+                index++;
+                if(nodes[index]!= null){
+                    currentNode = nodes[index];
+                    return true;
+                }
+            }
+            return false;
+            
+        }
+
+        public void Reset()
+        {
+            index = -1;
+            currentNode = null;
         }
     }
 
@@ -38,7 +85,7 @@ public class HashMap<K, V>
         int bucketIndex = GetBucketValue(key);
         if (arrayOfNodes[bucketIndex] == null)
         {
-            arrayOfNodes[bucketIndex] = new Node (key, value);
+            arrayOfNodes[bucketIndex] = new Node(key, value);
         }
         else
         {
@@ -70,11 +117,11 @@ public class HashMap<K, V>
             while (currentNode != null)
             {
                 int newBucketIndex = GetBucketValue(currentNode.key, newSize);
-                
+
                 Node next = currentNode.nextNode;
-                currentNode.nextNode = newNiz[newBucketIndex]; 
+                currentNode.nextNode = newNiz[newBucketIndex];
                 newNiz[newBucketIndex] = currentNode;
-                
+
                 currentNode = next;
             }
         }
@@ -83,7 +130,7 @@ public class HashMap<K, V>
 
     public int GetBucketValue(K key)
     {
-        return GetBucketValue(key, arrayOfNodes.Length)
+        return GetBucketValue(key, arrayOfNodes.Length);
     }
     public int GetBucketValue(K key, int lengthOfArray)
     {
@@ -151,5 +198,17 @@ public class HashMap<K, V>
     {
         arrayOfNodes = new Node[16];
         count = 0;
+    }
+
+    
+
+    public IEnumerator<KeyValuePair<K, V>> GetEnumerator()
+    {
+        return new KeyValueEnumerator(arrayOfNodes);
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }
