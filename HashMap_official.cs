@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
 {
-    class Node
+    public class Node
     {
         public K key;
         public V value;
@@ -16,6 +16,146 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
             this.value = value;
         }
     }
+
+    
+
+    public class KeyCollection : IEnumerable<K>
+    {
+
+        class KeyEnumerator : IEnumerator<K>
+        {
+            
+            private Node[] nodes;
+            private int index;
+            private Node currentNode;
+
+            public KeyEnumerator(Node[] nodes)
+            {
+                this.nodes = nodes;
+                Reset();
+
+            }
+            public K Current => currentNode.key;
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                System.Console.WriteLine("Zavrseno!");
+            }
+
+            public bool MoveNext()
+            {
+                if(currentNode != null && currentNode.nextNode != null) {
+                    currentNode = currentNode.nextNode;
+                    return true;
+                }
+                while(index < nodes.Length - 1 ){
+                    index++;
+                    if(nodes[index]!= null){
+                        currentNode = nodes[index];
+                        return true;
+                    }
+                }
+                return false;
+                
+            }
+
+            public void Reset()
+            {
+                index = -1;
+                currentNode = null;
+            }
+        }
+
+        private Node[] nodes;
+        
+        public KeyCollection(Node[] nodes)
+        {
+            this.nodes = nodes;
+        }
+
+
+        public IEnumerator<K> GetEnumerator()
+        {
+            return new KeyEnumerator(nodes);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+
+    public class ValueCollection : IEnumerable<V>
+    {
+
+        class ValueEnumerator : IEnumerator<V>
+        {
+            
+            private Node[] nodes;
+            private int index;
+            private Node currentNode;
+
+            public ValueEnumerator(Node[] nodes)
+            {
+                this.nodes = nodes;
+                Reset();
+
+            }
+            public V Current => currentNode.value;
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                System.Console.WriteLine("Zavrseno!");
+            }
+
+            public bool MoveNext()
+            {
+                if(currentNode != null && currentNode.nextNode != null) {
+                    currentNode = currentNode.nextNode;
+                    return true;
+                }
+                while(index < nodes.Length - 1 ){
+                    index++;
+                    if(nodes[index]!= null){
+                        currentNode = nodes[index];
+                        return true;
+                    }
+                }
+                return false;
+                
+            }
+
+            public void Reset()
+            {
+                index = -1;
+                currentNode = null;
+            }
+        }
+
+        private Node[] nodes;
+        
+        public ValueCollection(Node[] nodes)
+        {
+            this.nodes = nodes;
+        }
+
+
+        public IEnumerator<V> GetEnumerator()
+        {
+            return new ValueEnumerator(nodes);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+
+
 
     class KeyValueEnumerator : IEnumerator<KeyValuePair<K, V>>
     {
@@ -200,7 +340,14 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
         count = 0;
     }
 
-    
+    public KeyCollection GetKeyCollection()
+    {
+        return new KeyCollection(arrayOfNodes);
+    }
+    public ValueCollection GetValueCollection()
+    {
+        return new ValueCollection(arrayOfNodes);
+    }
 
     public IEnumerator<KeyValuePair<K, V>> GetEnumerator()
     {
