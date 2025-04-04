@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
+public class HashMap<K, V> : IEnumerable<KeyValuePair<K, V>>
 {
     public class Node
     {
@@ -17,48 +17,58 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
         }
     }
 
-    
-
     public class KeyCollection : IEnumerable<K>
     {
-
         class KeyEnumerator : IEnumerator<K>
         {
-            
             private Node[] nodes;
             private int index;
             private Node currentNode;
+            private HashMap<K, V> map;
+            private int version;
 
-            public KeyEnumerator(Node[] nodes)
+            public KeyEnumerator(Node[] nodes, HashMap<K, V> map)
             {
                 this.nodes = nodes;
+                this.map = map;
+                this.version = map.version;
                 Reset();
-
             }
+
             public K Current => currentNode.key;
 
             object IEnumerator.Current => Current;
 
             public void Dispose()
             {
-                System.Console.WriteLine("Zavrseno!");
+                nodes = null;
+                currentNode = null;
+                map = null; 
             }
 
             public bool MoveNext()
             {
-                if(currentNode != null && currentNode.nextNode != null) {
+                if (map.version != version)
+                {
+                    throw new InvalidOperationException("Collection was modified during iteration.");
+                }
+
+                if (currentNode != null && currentNode.nextNode != null)
+                {
                     currentNode = currentNode.nextNode;
                     return true;
                 }
-                while(index < nodes.Length - 1 ){
+
+                while (index < nodes.Length - 1)
+                {
                     index++;
-                    if(nodes[index]!= null){
+                    if (nodes[index] != null)
+                    {
                         currentNode = nodes[index];
                         return true;
                     }
                 }
                 return false;
-                
             }
 
             public void Reset()
@@ -69,16 +79,17 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
         }
 
         private Node[] nodes;
-        
-        public KeyCollection(Node[] nodes)
+        private HashMap<K, V> map;
+
+        public KeyCollection(Node[] nodes, HashMap<K, V> map)
         {
             this.nodes = nodes;
+            this.map = map;
         }
-
 
         public IEnumerator<K> GetEnumerator()
         {
-            return new KeyEnumerator(nodes);
+            return new KeyEnumerator(nodes, map);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -89,44 +100,56 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
 
     public class ValueCollection : IEnumerable<V>
     {
-
         class ValueEnumerator : IEnumerator<V>
         {
-            
             private Node[] nodes;
             private int index;
             private Node currentNode;
+            private HashMap<K, V> map;
+            private int version;
 
-            public ValueEnumerator(Node[] nodes)
+            public ValueEnumerator(Node[] nodes, HashMap<K, V> map)
             {
                 this.nodes = nodes;
+                this.map = map;
+                this.version = map.version;
                 Reset();
-
             }
+
             public V Current => currentNode.value;
 
             object IEnumerator.Current => Current;
 
             public void Dispose()
             {
-                System.Console.WriteLine("Zavrseno!");
+                nodes = null;
+                currentNode = null;
+                map = null;
             }
 
             public bool MoveNext()
             {
-                if(currentNode != null && currentNode.nextNode != null) {
+                if (map.version != version)
+                {
+                    throw new InvalidOperationException("Collection was modified during iteration.");
+                }
+
+                if (currentNode != null && currentNode.nextNode != null)
+                {
                     currentNode = currentNode.nextNode;
                     return true;
                 }
-                while(index < nodes.Length - 1 ){
+
+                while (index < nodes.Length - 1)
+                {
                     index++;
-                    if(nodes[index]!= null){
+                    if (nodes[index] != null)
+                    {
                         currentNode = nodes[index];
                         return true;
                     }
                 }
                 return false;
-                
             }
 
             public void Reset()
@@ -137,16 +160,17 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
         }
 
         private Node[] nodes;
-        
-        public ValueCollection(Node[] nodes)
+        private HashMap<K, V> map;
+
+        public ValueCollection(Node[] nodes, HashMap<K, V> map)
         {
             this.nodes = nodes;
+            this.map = map;
         }
-
 
         public IEnumerator<V> GetEnumerator()
         {
-            return new ValueEnumerator(nodes);
+            return new ValueEnumerator(nodes, map);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -155,45 +179,56 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
         }
     }
 
-
-
     class KeyValueEnumerator : IEnumerator<KeyValuePair<K, V>>
     {
-
         private Node[] nodes;
         private int index;
         private Node currentNode;
+        private HashMap<K, V> map;
+        private int initialVersion;
 
-        public KeyValueEnumerator(Node[] nodes)
+        public KeyValueEnumerator(Node[] nodes, HashMap<K, V> map)
         {
             this.nodes = nodes;
+            this.map = map;
+            initialVersion = map.version;
             Reset();
-
         }
-        public KeyValuePair<K, V> Current => new KeyValuePair<K, V>(currentNode.key,currentNode.value);
+
+        public KeyValuePair<K, V> Current => new KeyValuePair<K, V>(currentNode.key, currentNode.value);
 
         object IEnumerator.Current => Current;
 
         public void Dispose()
         {
-            System.Console.WriteLine("Zavrseno!");
+            nodes = null;
+            currentNode = null;
+            map = null;  
         }
 
         public bool MoveNext()
         {
-            if(currentNode != null && currentNode.nextNode != null) {
+            if (map.version != initialVersion)
+            {
+                throw new InvalidOperationException("Collection was modified during iteration.");
+            }
+
+            if (currentNode != null && currentNode.nextNode != null)
+            {
                 currentNode = currentNode.nextNode;
                 return true;
             }
-            while(index < nodes.Length - 1 ){
+
+            while (index < nodes.Length - 1)
+            {
                 index++;
-                if(nodes[index]!= null){
+                if (nodes[index] != null)
+                {
                     currentNode = nodes[index];
                     return true;
                 }
             }
             return false;
-            
         }
 
         public void Reset()
@@ -206,11 +241,13 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
     private Node[] arrayOfNodes;
     private int count;
     private const double LoadFactor = 0.75;
+    private int version;
 
     public HashMap()
     {
         arrayOfNodes = new Node[16];
         count = 0;
+        version = 0;
     }
 
     public int Count => count;
@@ -244,6 +281,7 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
             arrayOfNodes[bucketIndex] = newNode;
         }
         count++;
+        version++;
     }
 
     private void Expand()
@@ -266,12 +304,19 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
             }
         }
         arrayOfNodes = newNiz;
+        version++;
+    }
+
+    public Node[] GetNodesArray()
+    {
+        return arrayOfNodes;
     }
 
     public int GetBucketValue(K key)
     {
         return GetBucketValue(key, arrayOfNodes.Length);
     }
+
     public int GetBucketValue(K key, int lengthOfArray)
     {
         return (key.GetHashCode() & 0x7FFFFFFF) % lengthOfArray;
@@ -327,6 +372,7 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
             {
                 currentNode = currentNode.nextNode;
                 count--;
+                version++;
                 return true;
             }
             currentNode = ref currentNode.nextNode;
@@ -338,20 +384,22 @@ public class HashMap<K, V> : IEnumerable<KeyValuePair<K,V>>
     {
         arrayOfNodes = new Node[16];
         count = 0;
+        version++;
     }
 
     public KeyCollection GetKeyCollection()
     {
-        return new KeyCollection(arrayOfNodes);
+        return new KeyCollection(arrayOfNodes, this);
     }
+
     public ValueCollection GetValueCollection()
     {
-        return new ValueCollection(arrayOfNodes);
+        return new ValueCollection(arrayOfNodes, this);
     }
 
     public IEnumerator<KeyValuePair<K, V>> GetEnumerator()
     {
-        return new KeyValueEnumerator(arrayOfNodes);
+        return new KeyValueEnumerator(arrayOfNodes, this);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
